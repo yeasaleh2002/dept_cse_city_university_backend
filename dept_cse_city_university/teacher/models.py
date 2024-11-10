@@ -1,6 +1,7 @@
 from django.db import models
 from user.models import User
 
+
 class Degree(models.Model):
     teacher = models.ForeignKey('Teacher', on_delete=models.CASCADE, related_name='degrees')
     name = models.CharField(max_length=100)
@@ -8,18 +9,22 @@ class Degree(models.Model):
     result = models.CharField(max_length=50)
     university = models.CharField(max_length=100)
 
+
     def __str__(self):
         return f"{self.name} from {self.university} ({self.year})"
 
+
 class Experience(models.Model):
     teacher = models.ForeignKey('Teacher', on_delete=models.CASCADE, related_name='experiences')
-    institution_name = models.CharField(max_length=100)
+    institution_name = models.CharField(max_length=200)
     designation = models.CharField(max_length=100)
     starting_date = models.DateField()
     ending_date = models.DateField(null=True, blank=True)  # null if still employed
 
+
     def __str__(self):
         return f"{self.institution_name} - {self.designation}"
+
 
 class Teacher(models.Model):
     role = models.ForeignKey('user.User', on_delete=models.CASCADE)
@@ -34,6 +39,7 @@ class Teacher(models.Model):
     publication = models.TextField(blank=True, null=True)
     date_of_birth = models.DateField()
     address = models.TextField()
+
 
     def __str__(self):
         return f"{self.name} - {self.designation}"

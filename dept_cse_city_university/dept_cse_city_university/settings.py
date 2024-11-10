@@ -49,7 +49,7 @@ INSTALLED_APPS = [
     'admission',
     'notification',
     'class_routine',
-    'certificat_application',
+    
     
 ]
 
