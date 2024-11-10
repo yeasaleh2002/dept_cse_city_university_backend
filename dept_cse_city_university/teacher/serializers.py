@@ -1,6 +1,8 @@
 from rest_framework import serializers
 from .models import Teacher, Degree, Experience
-
+from django.contrib.auth.hashers import make_password
+from django.contrib.auth.password_validation import validate_password
+from user.models import User
 
 class DegreeSerializer(serializers.ModelSerializer):
     class Meta:
@@ -13,16 +15,63 @@ class ExperienceSerializer(serializers.ModelSerializer):
         model = Experience
         fields = ['id','teacher', 'institution_name', 'designation', 'starting_date', 'ending_date']
 
-
 class TeacherSerializer(serializers.ModelSerializer):
     degrees = DegreeSerializer(many=True, read_only=True)
     experiences = ExperienceSerializer(many=True, read_only=True)
-
+    password = serializers.CharField(write_only=True, required=False, validators=[validate_password])
+    confirm_password = serializers.CharField(write_only=True, required=False)
+    role=serializers.ChoiceField(choices=User.ROLE_CHOICES, default='teacher')
 
     class Meta:
         model = Teacher
         fields = [
-            'id', 'role', 'name', 'designation', 'email', 'phone', 'gender', 'photo',
+            'id', 'role', 'name', 'designation', 'email', 'password', 'confirm_password', 'phone', 'gender', 'photo',
             'description', 'research', 'publication', 'date_of_birth', 'address',
             'degrees', 'experiences'
         ]
+
+    def validate(self, attrs):
+        password = attrs.get('password')
+        confirm_password = attrs.get('confirm_password')
+        
+        if password and confirm_password and password != confirm_password:
+            raise serializers.ValidationError("Passwords do not match.")
+        
+        return attrs
+    
+    def create(self, validated_data):
+        # Remove confirm_password from validated_data after validation
+        validated_data.pop('confirm_password', None)
+        
+        # Extract and hash the password
+        password = validated_data.get('password')
+        if password:
+            validated_data['password'] = make_password(password)
+        
+        # Create User instance for the Teacher
+        role = validated_data.pop('role', 'teacher')  # Default to 'teacher' if no role is provided
+        user = User.objects.create(
+            username=validated_data['email'],  # Using email as the username
+            email=validated_data['email'],
+            password=validated_data['password'],
+            role=role , # Use the role passed in the validated data (can be 'teacher', 'admin', etc.)
+            name=validated_data['name'],
+        )
+        
+        # Create Teacher instance and associate it with the User
+        teacher = Teacher.objects.create(
+            user=user,
+            name=validated_data['name'],
+            designation=validated_data['designation'],
+            email=validated_data['email'],
+            phone=validated_data.get('phone'),
+            gender=validated_data['gender'],
+            photo=validated_data.get('photo'),
+            description=validated_data.get('description'),
+            research=validated_data.get('research'),
+            publication=validated_data.get('publication'),
+            date_of_birth=validated_data['date_of_birth'],
+            address=validated_data.get('address')
+        )
+        
+        return teacher
