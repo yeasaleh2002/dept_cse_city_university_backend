@@ -82,5 +82,5 @@ class TeacherSerializer(serializers.ModelSerializer):
             date_of_birth=validated_data['date_of_birth'],
             address=validated_data.get('address')
         )
-        
+
         return teacher
