@@ -5,7 +5,7 @@ from user.models import User
 class Degree(models.Model):
     teacher = models.ForeignKey('Teacher', on_delete=models.CASCADE, related_name='degrees')
     name = models.CharField(max_length=100)
-    year = models.IntegerField()
+    year = models.DateField()
     result = models.CharField(max_length=50)
     university = models.CharField(max_length=100)
 
@@ -25,12 +25,11 @@ class Experience(models.Model):
     def __str__(self):
         return f"{self.institution_name} - {self.designation}"
 
-
 class Teacher(models.Model):
-    role = models.ForeignKey('user.User', on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='teacher')
     name = models.CharField(max_length=100)
+    email=models.EmailField()
     designation = models.CharField(max_length=100)
-    email = models.EmailField(unique=True)
     phone = models.CharField(max_length=15, blank=True, null=True)
     gender = models.CharField(max_length=10, choices=[('male', 'Male'), ('female', 'Female'), ('other', 'Other')])
     photo = models.ImageField(upload_to='teacher_photos/', blank=True, null=True)
