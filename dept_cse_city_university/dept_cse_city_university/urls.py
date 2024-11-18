@@ -22,6 +22,10 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('user/', include("user.urls")),
     path('teacher/', include("teacher.urls")),
+<<<<<<< HEAD
     path('api/auth/',include('rest_framework.urls')), 
+=======
+    path('student/', include("student.urls")),
+>>>>>>> 7eb58af (update student code)
 ]
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
