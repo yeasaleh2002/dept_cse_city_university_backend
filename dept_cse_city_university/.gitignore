@@ -1,1 +1,3 @@
 dept_cse_city_university/db.sqlite3
+__pycache__/
+*.pyc
