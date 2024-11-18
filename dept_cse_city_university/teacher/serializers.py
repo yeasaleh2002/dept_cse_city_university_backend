@@ -16,7 +16,6 @@ class ExperienceSerializer(serializers.ModelSerializer):
         model = Experience
         fields = ['id', 'teacher', 'institution_name', 'designation', 'starting_date', 'ending_date']
 
-
 class TeacherSerializer(serializers.ModelSerializer):
     degrees = DegreeSerializer(many=True, read_only=True)
     experiences = ExperienceSerializer(many=True, read_only=True)
