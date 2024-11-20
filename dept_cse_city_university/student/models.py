@@ -33,32 +33,6 @@ class Batch(models.Model):
         return self.name
 
 
-class SSCInfo(models.Model):
-    roll = models.CharField(max_length=50)
-    reg = models.CharField(max_length=50)
-    passing_year = models.IntegerField()
-    result = models.CharField(max_length=10)
-    school = models.CharField(max_length=255)
-    board = models.CharField(max_length=50)
-    group = models.CharField(max_length=50)
-
-    def __str__(self):
-        return f"SSC Info - Roll: {self.roll}"
-
-
-class HSCInfo(models.Model):
-    roll = models.CharField(max_length=50)
-    reg = models.CharField(max_length=50)
-    passing_year = models.IntegerField()
-    result = models.CharField(max_length=10)
-    college = models.CharField(max_length=255)
-    board = models.CharField(max_length=50)
-    group = models.CharField(max_length=50)
-
-    def __str__(self):
-        return f"HSC Info - Roll: {self.roll}"
-
-
 class Student(models.Model):
     GENDER_CHOICES = [
         ('M', 'Male'),
@@ -66,20 +40,37 @@ class Student(models.Model):
         ('O', 'Other')
     ]
 
+    # User and Personal Information
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='student', null=True)
     phone = models.CharField(max_length=15)
     date_of_birth = models.DateField()
     address = models.TextField()
-    batch = models.ForeignKey(Batch, on_delete=models.CASCADE, null=True)
+    batch = models.ForeignKey('Batch', on_delete=models.CASCADE, null=True)
     father_name = models.CharField(max_length=255)
     mother_name = models.CharField(max_length=255)
     gender = models.CharField(max_length=1, choices=GENDER_CHOICES)
     photo = models.ImageField(upload_to='photos/', blank=True, null=True)
-    ssc = models.OneToOneField(SSCInfo, on_delete=models.SET_NULL, null=True, blank=True, related_name='student')
-    hsc = models.OneToOneField(HSCInfo, on_delete=models.SET_NULL, null=True, blank=True, related_name='student')
     student_id = models.CharField(max_length=5, unique=True, null=True, blank=True)
     is_approved = models.BooleanField(default=False)
-    password = models.CharField(max_length=128, blank=True, null=True)  
+    password = models.CharField(max_length=128, blank=True, null=True)
+
+    # SSC Information
+    ssc_roll = models.CharField(max_length=50, blank=True, null=True)
+    ssc_reg = models.CharField(max_length=50, blank=True, null=True)
+    ssc_passing_year = models.IntegerField(blank=True, null=True)
+    ssc_result = models.CharField(max_length=10, blank=True, null=True)
+    ssc_school = models.CharField(max_length=255, blank=True, null=True)
+    ssc_board = models.CharField(max_length=50, blank=True, null=True)
+    ssc_group = models.CharField(max_length=50, blank=True, null=True)
+
+    # HSC Information
+    hsc_roll = models.CharField(max_length=50, blank=True, null=True)
+    hsc_reg = models.CharField(max_length=50, blank=True, null=True)
+    hsc_passing_year = models.IntegerField(blank=True, null=True)
+    hsc_result = models.CharField(max_length=10, blank=True, null=True)
+    hsc_college = models.CharField(max_length=255, blank=True, null=True)
+    hsc_board = models.CharField(max_length=50, blank=True, null=True)
+    hsc_group = models.CharField(max_length=50, blank=True, null=True)
 
     def __str__(self):
         return f'{self.user.first_name} {self.user.last_name}'
@@ -93,8 +84,8 @@ class Student(models.Model):
         if self.is_approved and not self.student_id:
             self.student_id = self.generate_student_id()
             raw_password = ''.join(random.choices(string.ascii_letters + string.digits, k=8))
-            self.password = make_password(raw_password)  
-            self._raw_password = raw_password 
+            self.password = make_password(raw_password)
+            self._raw_password = raw_password  # Temporary raw password for email
         super().save(*args, **kwargs)
 
 
@@ -121,7 +112,6 @@ def send_admission_email(sender, instance, created, **kwargs):
             settings.DEFAULT_FROM_EMAIL,
             [instance.user.email]
         )
-
 
 class Routine(models.Model):
     batch = models.ForeignKey(Batch, on_delete=models.CASCADE)
