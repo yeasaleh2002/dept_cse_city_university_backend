@@ -24,6 +24,8 @@ urlpatterns = [
     path('teacher/', include("teacher.urls")),
     path('student/', include("student.urls")),
     path('contact_us/', include("contact_us.urls")),
+    path('feedback/',include("feedback.urls")),
+    path('notification/',include("notification.urls")),
     path('api/auth/',include('rest_framework.urls')), 
 ]
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

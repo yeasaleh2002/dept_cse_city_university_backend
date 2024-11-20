@@ -4,12 +4,11 @@ from teacher.models import Teacher
 from django.contrib.auth import get_user_model
 
 class FeedbackSerializer(serializers.ModelSerializer):
-    student = serializers.SlugRelatedField(queryset=get_user_model().objects.all(), slug_field='username', required=False)  # Automatically set
     teacher = serializers.SlugRelatedField(queryset=Teacher.objects.all(), slug_field='name')
 
     class Meta:
         model = Feedback
-        fields = ['id', 'student', 'teacher', 'feedback_text', 'rating', 'created_at']
+        fields = ['id','teacher', 'feedback_text', 'rating', 'created_at']
         read_only_fields = ['created_at']
     
     def create(self, validated_data):

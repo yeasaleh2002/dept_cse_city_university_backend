@@ -5,7 +5,7 @@ from .models import Feedback
 
 
 class FeedbackAdmin(admin.ModelAdmin):
-    list_display = ('student', 'teacher', 'rating', 'created_at')
+    list_display = ('teacher', 'rating', 'created_at')
     search_fields = ('student__username', 'teacher__name', 'feedback_text')
     ordering = ('-created_at',)
 
