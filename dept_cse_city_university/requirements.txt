@@ -1,7 +1,10 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> c38d211 (deploy setup for vercel)
+=======
+>>>>>>> 92db7f2 (up)
 asgiref==3.8.1
 astroid==3.3.5
 certifi==2024.8.30
@@ -35,6 +38,9 @@ tzdata==2024.1
 virtualenv==20.26.4
 whitenoise==6.8.2
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 92db7f2 (up)
 =======
 asgiref
 astroid
@@ -66,6 +72,10 @@ tomlkit
 typing_extensions
 tzdata
 virtualenv
+<<<<<<< HEAD
 >>>>>>> 09159cc (update)
 =======
 >>>>>>> c38d211 (deploy setup for vercel)
+=======
+>>>>>>> 2577a7b (update)
+>>>>>>> 92db7f2 (up)
