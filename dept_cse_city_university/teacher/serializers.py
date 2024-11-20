@@ -15,10 +15,6 @@ class ExperienceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Experience
         fields = ['id', 'teacher', 'institution_name', 'designation', 'starting_date', 'ending_date']
-<<<<<<< HEAD
-=======
-
->>>>>>> 09159cc (update)
 
 class TeacherSerializer(serializers.ModelSerializer):
     degrees = DegreeSerializer(many=True, read_only=True)

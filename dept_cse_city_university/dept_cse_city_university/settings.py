@@ -98,23 +98,23 @@ WSGI_APPLICATION = 'dept_cse_city_university.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': BASE_DIR / 'db.sqlite3',
-#     }
-# }
-
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'postgres',
-        'USER': 'postgres.igofirpuwdjebitupukw',
-        'PASSWORD': 'fazlerabbi1972',
-        'HOST': 'aws-0-ap-southeast-1.pooler.supabase.com',
-        'PORT': '6543'
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
+
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'NAME': 'postgres',
+#         'USER': 'postgres.igofirpuwdjebitupukw',
+#         'PASSWORD': 'fazlerabbi1972',
+#         'HOST': 'aws-0-ap-southeast-1.pooler.supabase.com',
+#         'PORT': '6543'
+#     }
+# }
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
 
@@ -154,14 +154,8 @@ MEDIA_URL = '/media/'
 
 # CORS settings
 CORS_ALLOW_ALL_ORIGINS = True  
-CORS_ALLOW_HEADERS = [
-    "accept", "accept-encoding", "authorization", "content-type",
-    "dnt", "origin", "user-agent", "x-csrftoken", "x-requested-with"
-]
-CORS_ALLOW_METHODS = [
-    "DELETE", "GET", "OPTIONS", "PATCH", "POST", "PUT"
-]
-CORS_ALLOW_CREDENTIALS = True
+
+
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
