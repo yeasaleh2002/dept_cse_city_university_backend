@@ -1,9 +1,16 @@
-from rest_framework import viewsets
-from rest_framework.filters import SearchFilter, OrderingFilter
-from django_filters import rest_framework as filters  # Import Django Filter
 
-from .models import Semester, Batch, SSCInfo, HSCInfo, Student, Routine, Subject, Registration, Result, Announcement
-from .serializers import SemesterSerializer, BatchSerializer, SSCInfoSerializer, HSCInfoSerializer, StudentSerializer, RoutineSerializer, SubjectSerializer, RegistrationSerializer, ResultSerializer, AnnouncementSerializer
+from rest_framework.filters import SearchFilter, OrderingFilter
+from django_filters import rest_framework as filters 
+from rest_framework import viewsets, status
+from rest_framework.decorators import action
+from rest_framework.response import Response
+from .models import Student
+from .serializers import StudentSerializer, StudentCreateSerializer
+from django.core.mail import send_mail
+from django.conf import settings
+
+from .models import Semester, Batch, Student, Routine, Subject, Registration, Result, Announcement
+from .serializers import SemesterSerializer, BatchSerializer, StudentSerializer, RoutineSerializer, SubjectSerializer, RegistrationSerializer, ResultSerializer, AnnouncementSerializer
 
 class SemesterFilter(filters.FilterSet):
     start_date = filters.DateFilter(field_name="start_date", lookup_expr='gte')  
@@ -40,32 +47,71 @@ class BatchViewSet(viewsets.ModelViewSet):
     ordering_fields = ['name']
     ordering = ['name']
 
-class SSCInfoViewSet(viewsets.ModelViewSet):
-    queryset = SSCInfo.objects.all()
-    serializer_class = SSCInfoSerializer
-    filter_backends = (SearchFilter, OrderingFilter, filters.DjangoFilterBackend)
-    filterset_fields = ['roll', 'school', 'board', 'result']  
-    search_fields = ['roll', 'school', 'board', 'result']  
-    ordering_fields = ['passing_year', 'result']
-    ordering = ['passing_year']
-
-class HSCInfoViewSet(viewsets.ModelViewSet):
-    queryset = HSCInfo.objects.all()
-    serializer_class = HSCInfoSerializer
-    filter_backends = (SearchFilter, OrderingFilter, filters.DjangoFilterBackend)
-    filterset_fields = ['roll', 'college', 'board', 'result']
-    search_fields = ['roll', 'college', 'board', 'result']
-    ordering_fields = ['passing_year', 'result']
-    ordering = ['passing_year']
 
 class StudentViewSet(viewsets.ModelViewSet):
+    """
+    A viewset for managing Student objects.
+    """
     queryset = Student.objects.all()
     serializer_class = StudentSerializer
-    filter_backends = (SearchFilter, OrderingFilter, filters.DjangoFilterBackend)
-    filterset_class = StudentFilter  
-    search_fields = ['user__first_name', 'user__last_name', 'student_id', 'phone', 'batch__name']  
-    ordering_fields = ['student_id', 'date_of_birth', 'is_approved']
-    ordering = ['student_id']
+
+    def get_serializer_class(self):
+        """
+        Use a different serializer for creating objects.
+        """
+        if self.action == 'create':
+            return StudentCreateSerializer
+        return StudentSerializer
+
+    def perform_create(self, serializer):
+        """
+        Save a new student instance.
+        """
+        serializer.save()
+
+    @action(detail=True, methods=['patch'])
+    def approve(self, request, pk=None):
+        """
+        Approve a student and assign a student ID and password.
+        """
+        student = self.get_object()
+        if not student.is_approved:
+            student.is_approved = True
+            student.save()
+            # Send approval email
+            subject = "Your Admission has been Approved"
+            message = f"""
+            Dear {student.user.first_name},
+
+            Congratulations! Your admission has been approved.
+
+            Your Student ID: {student.student_id}
+            Your Password: {student.password}
+
+            You can log in using your email and the provided password.
+
+            Regards,
+            Admission Office
+            """
+            send_mail(
+                subject,
+                message,
+                settings.DEFAULT_FROM_EMAIL,
+                [student.user.email]
+            )
+            return Response({"message": "Student approved successfully!"}, status=status.HTTP_200_OK)
+        return Response({"message": "Student is already Exist!"}, status=status.HTTP_400_BAD_REQUEST)
+
+    @action(detail=False, methods=['get'])
+    def my_profile(self, request):
+        """
+        Retrieve the authenticated user's student profile.
+        """
+        student = self.queryset.filter(user=request.user).first()
+        if not student:
+            return Response({"detail": "Profile not found."}, status=status.HTTP_404_NOT_FOUND)
+        serializer = self.get_serializer(student)
+        return Response(serializer.data)
 
 class RoutineViewSet(viewsets.ModelViewSet):
     queryset = Routine.objects.all()
