@@ -3,4 +3,9 @@
 **/__pycache__/
 =======
 dept_cse_city_university/db.sqlite3
+<<<<<<< HEAD
 >>>>>>> 505b604 (up)
+=======
+__pycache__/
+*.pyc
+>>>>>>> 0c08f26 (up)
