@@ -22,36 +22,16 @@ class BatchAdmin(admin.ModelAdmin):
     search_fields = ('name',)
 
 
-class StudentAdmin(admin.ModelAdmin):
-    list_display = ('user', 'student_id', 'batch', 'is_approved', 'gender', 'phone')
-    list_filter = ('is_approved', 'batch', 'gender')
-    search_fields = ('user__first_name', 'user__last_name', 'student_id', 'phone', 'ssc_roll', 'hsc_roll')
-    readonly_fields = ('student_id', 'password')  # Make certain fields read-only
-    fieldsets = (
-        ('Personal Information', {
-            'fields': ('user', 'photo', 'phone', 'date_of_birth', 'gender', 'address', 'father_name', 'mother_name')
-        }),
-        ('Batch and Status', {
-            'fields': ('batch', 'is_approved', 'student_id')
-        }),
-        ('SSC Information', {
-            'fields': ('ssc_roll', 'ssc_reg', 'ssc_passing_year', 'ssc_result', 'ssc_school', 'ssc_board', 'ssc_group')
-        }),
-        ('HSC Information', {
-            'fields': ('hsc_roll', 'hsc_reg', 'hsc_passing_year', 'hsc_result', 'hsc_college', 'hsc_board', 'hsc_group')
-        }),
-        ('System Information', {
-            'fields': ('password',)
-        }),
-    )
 
-    def get_readonly_fields(self, request, obj=None):
-        """
-        Make `student_id` and `password` read-only after the student is created.
-        """
-        if obj:
-            return self.readonly_fields + ('student_id', 'password')
-        return self.readonly_fields
+class StudentAdmin(admin.ModelAdmin):
+    list_display = ('user', 'student_id', 'is_approved')
+    list_filter = ('is_approved',)
+    search_fields = ('user__first_name', 'user__last_name', 'student_id')
+    actions = ['approve_students']
+
+    def approve_students(self, request, queryset):
+        queryset.update(is_approved=True)
+    approve_students.short_description = "Approve selected students"
 
 
 # Register the Student model with the custom admin class

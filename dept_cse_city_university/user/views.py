@@ -6,14 +6,16 @@ from django.contrib.auth import authenticate, login, logout
 from rest_framework.authtoken.models import Token
 from user.serializers import UserLoginSerializer
 from teacher.models import Teacher
+from student.models import Student
 # from student.models import Student  # Assuming you have a Student model
 from rest_framework.permissions import IsAuthenticated
+
 
 class LoginAPIView(APIView):
     def post(self, request):
         # Use the UserLoginSerializer to validate the request data
         serializer = UserLoginSerializer(data=request.data)
-        
+
         if serializer.is_valid():
             # Retrieve the validated data from the serializer
             email = serializer.validated_data.get('email')
@@ -30,33 +32,32 @@ class LoginAPIView(APIView):
                     # Log the user in (sets session and authentication)
                     login(request, user)
 
-                    # Fetch the Teacher or Student object associated with the User
-                    user_name = None
-                    user_role = None
-                    
-                    # Check if the user is a Teacher or a Student or an Admin
+                    # Determine user role and name
+                    user_name = user.get_full_name()  # Fallback to the user's full name
+                    user_role = 'user'  # Default role
+
                     try:
+                        # Check if the user is a Teacher
                         teacher = Teacher.objects.get(user=user)
                         user_name = teacher.name
-                        user_role = 'teacher'  # Set role to 'teacher' if it's a Teacher
+                        user_role = 'teacher'
                     except Teacher.DoesNotExist:
+                        try:
+                            # Check if the user is a Student
+                            student = Student.objects.get(user=user)
+                            user_name = student.user.get_full_name()  # Use associated User's full name
+                            user_role = 'student'
+                        except Student.DoesNotExist:
+                            # If neither, check if the user is an admin
                             if user.is_superuser:
-                                user_role = 'admin'  # Set role to 'admin' if it's an admin
-                            else:
-                                user_role = 'user'  # Set role to 'user' if it's neither Teacher nor Student
-                        # try:
-                        #     student = Student.objects.get(user=user)
-                        #     user_name = student.name
-                        #     user_role = 'student'  # Set role to 'student' if it's a Student
-                        # except Student.DoesNotExist:
-                            
+                                user_role = 'admin'
 
                     # Prepare the response data, including the role
                     user_data = {
                         'token': token.key,
                         'user_id': user.id,
-                        'name': user_name,  # Include the name (from Teacher or Student)
-                        'role': user_role,   # Include the role (teacher, student, admin, etc.)
+                        'name': user_name,
+                        'role': user_role,
                     }
 
                     # Return the user data and the authentication token
@@ -68,6 +69,7 @@ class LoginAPIView(APIView):
 
         # If serializer validation fails, return the validation errors
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 class LogoutAPIview(APIView):
     permission_classes = [IsAuthenticated]

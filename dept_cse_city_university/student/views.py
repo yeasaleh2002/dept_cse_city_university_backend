@@ -4,12 +4,19 @@ from django_filters import rest_framework as filters
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from .models import Student
-from .serializers import StudentSerializer, StudentCreateSerializer
-from django.core.mail import send_mail
-from django.conf import settings 
-
+from .serializers import StudentSerializer
+filter_backends = (SearchFilter, OrderingFilter, filters.DjangoFilterBackend)
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from django.contrib.auth import authenticate, login, logout
+from rest_framework.authtoken.models import Token
+from .serializers import LoginSerializer
 from .models import Semester, Batch, Student, Routine, Subject, Registration, Result, Announcement
 from .serializers import SemesterSerializer, BatchSerializer, StudentSerializer, RoutineSerializer, SubjectSerializer, RegistrationSerializer, ResultSerializer, AnnouncementSerializer
+from django.contrib.auth import get_user_model
+
+
 
 class SemesterFilter(filters.FilterSet):
     start_date = filters.DateFilter(field_name="start_date", lookup_expr='gte')  
@@ -52,53 +59,11 @@ class StudentViewSet(viewsets.ModelViewSet):
     """
     queryset = Student.objects.all()
     serializer_class = StudentSerializer
+    filterset_class = StudentFilter  
+    search_fields = ['student_id', 'name']  
+    ordering_fields = ['student_id', 'name']  
+    ordering = ['student_id']
 
-    def get_serializer_class(self):
-        """
-        Use a different serializer for creating objects.
-        """
-        if self.action == 'create':
-            return StudentCreateSerializer
-        return StudentSerializer
-
-    def perform_create(self, serializer):
-        """
-        Save a new student instance.
-        """
-        serializer.save()
-
-    @action(detail=True, methods=['patch'])
-    def approve(self, request, pk=None):
-        """
-        Approve a student and assign a student ID and password.
-        """
-        student = self.get_object()
-        if not student.is_approved:
-            student.is_approved = True
-            student.save()
-            # Send approval email
-            subject = "Your Admission has been Approved"
-            message = f"""
-            Dear {student.user.first_name},
-
-            Congratulations! Your admission has been approved.
-
-            Your Student ID: {student.student_id}
-            Your Password: {student.password}
-
-            You can log in using your email and the provided password.
-
-            Regards,
-            Admission Office
-            """
-            send_mail(
-                subject,
-                message,
-                settings.DEFAULT_FROM_EMAIL,
-                [student.user.email]
-            )
-            return Response({"message": "Student approved successfully!"}, status=status.HTTP_200_OK)
-        return Response({"message": "Student is already approved!"}, status=status.HTTP_400_BAD_REQUEST)
 
     @action(detail=False, methods=['get'])
     def my_profile(self, request):
@@ -155,3 +120,28 @@ class AnnouncementViewSet(viewsets.ModelViewSet):
     search_fields = ['title', 'batch__name']
     ordering_fields = ['title', 'batch__name']
     ordering = ['title']
+
+
+
+
+class LoginAPIView(APIView):
+    def post(self, request):
+        serializer = LoginSerializer(data=request.data)
+        if serializer.is_valid():
+            # Retrieve the validated data from the serializer
+            email = serializer.validated_data.get('email')
+            password = serializer.validated_data.get('password')
+            print(f"Email: {email}, Password: {password}")
+            # Authenticate the user with the validated username and password
+            user_model = get_user_model()
+            print(user_model.objects.filter(email=email).exists())
+            
+            if user_model.objects.filter(email=email).exists():
+                token, _ = Token.objects.get_or_create(user=user_model.objects.get(email=email))
+                user = user_model.objects.get(email=email)
+                login(request, user)
+                
+                return Response({'token': token.key, 'user_id': user.id})
+            else:
+                return Response({'error': "Invalid user for login .Please sign up!"}, status=400)
+        return Response(serializer.errors, status=400)

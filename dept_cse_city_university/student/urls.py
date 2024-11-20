@@ -9,9 +9,11 @@ from .views import (
     SubjectViewSet, 
     RegistrationViewSet, 
     ResultViewSet, 
-    AnnouncementViewSet
+    AnnouncementViewSet,
+    LoginAPIView,
 )
 
+# Create router and register viewsets
 router = DefaultRouter()
 router.register(r'semesters', SemesterViewSet)
 router.register(r'batches', BatchViewSet)
@@ -22,6 +24,8 @@ router.register(r'registrations', RegistrationViewSet)
 router.register(r'results', ResultViewSet)
 router.register(r'announcements', AnnouncementViewSet)
 
+# Include router and standalone paths
 urlpatterns = [
-    path('', include(router.urls)), 
+    path('', include(router.urls)),  # Routes for viewsets
+    path('login/', LoginAPIView.as_view(), name='login'),  # Standalone login endpoint
 ]

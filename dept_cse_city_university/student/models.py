@@ -7,8 +7,8 @@ from django.contrib.auth.hashers import make_password
 from user.models import User
 from teacher.models import Teacher
 from decimal import Decimal
-import random
-import string
+
+from django.utils.crypto import get_random_string
 
 
 class Semester(models.Model):
@@ -77,41 +77,38 @@ class Student(models.Model):
 
     def generate_student_id(self):
         last_student = Student.objects.all().order_by('-id').first()
-        new_id = 1 if not last_student else int(last_student.student_id) + 1
+        if not last_student or not last_student.student_id:
+            new_id = 1
+        else:
+            new_id = int(last_student.student_id) + 1
+
+        while Student.objects.filter(student_id=str(new_id).zfill(5)).exists():
+            new_id += 1
         return str(new_id).zfill(5)
 
     def save(self, *args, **kwargs):
+        # Check if the student is being approved
         if self.is_approved and not self.student_id:
+            # Generate and assign student ID
             self.student_id = self.generate_student_id()
-            raw_password = ''.join(random.choices(string.ascii_letters + string.digits, k=8))
+            # Generate a random password
+            raw_password = get_random_string(length=8)
+        
+            # Hash the password before saving it to the database
             self.password = make_password(raw_password)
-            self._raw_password = raw_password  # Temporary raw password for email
+            send_mail(
+                'Your Approval Confirmation',
+                f'Congratulations {self.user.first_name},\n\n'
+                f'You have been approved as a student.\n\n'
+                f'Your Student ID: {self.student_id}\n'
+                f'Your Password: {raw_password}\n\n'
+                f'Please log in to your account and change your password for security.',
+                'admin@example.com',  # Replace with your admin email
+                [self.user.email],
+                fail_silently=False,
+            )
         super().save(*args, **kwargs)
 
-
-@receiver(post_save, sender=Student)
-def send_admission_email(sender, instance, created, **kwargs):
-    if instance.is_approved and created and hasattr(instance, '_raw_password'):
-        subject = "Your Admission has been Approved"
-        message = f"""
-        Dear {instance.user.first_name},
-
-        Congratulations! Your admission has been approved.
-
-        Your Student ID: {instance.student_id}
-        Your Password: {instance._raw_password}
-
-        You can log in using your email and the provided password.
-
-        Regards,
-        Admission Office
-        """
-        send_mail(
-            subject,
-            message,
-            settings.DEFAULT_FROM_EMAIL,
-            [instance.user.email]
-        )
 
 class Routine(models.Model):
     batch = models.ForeignKey(Batch, on_delete=models.CASCADE)

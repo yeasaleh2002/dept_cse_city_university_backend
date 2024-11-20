@@ -1,6 +1,9 @@
 from rest_framework import serializers
-from .models import Semester, Batch, SSCInfo, HSCInfo, Student, Routine, Subject, Registration, Result, Announcement
-
+from django.contrib.auth import authenticate
+from .models import Semester, Batch, Student, Routine, Subject, Registration, Result, Announcement
+from rest_framework import serializers
+from .models import Semester, Batch,  Student, Routine, Subject, Registration, Result, Announcement
+from  user.models import User
 
 class SemesterSerializer(serializers.ModelSerializer):
     class Meta:
@@ -130,6 +133,8 @@ class AnnouncementSerializer(serializers.ModelSerializer):
         model = Announcement
         fields = ['id', 'title', 'batch', 'batch_name', 'file']
 
+class LoginSerializer(serializers.Serializer):
+    email = serializers.EmailField(required=True)
+    password = serializers.CharField(required=True)
 
-
-
+    
