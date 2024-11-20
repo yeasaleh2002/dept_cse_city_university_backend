@@ -1,6 +1,7 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> c38d211 (deploy setup for vercel)
 =======
@@ -42,6 +43,8 @@ whitenoise==6.8.2
 =======
 >>>>>>> 92db7f2 (up)
 =======
+=======
+>>>>>>> b2a046d (up)
 asgiref
 astroid
 certifi
@@ -73,9 +76,13 @@ typing_extensions
 tzdata
 virtualenv
 <<<<<<< HEAD
+<<<<<<< HEAD
 >>>>>>> 09159cc (update)
 =======
 >>>>>>> c38d211 (deploy setup for vercel)
 =======
 >>>>>>> 2577a7b (update)
 >>>>>>> 92db7f2 (up)
+=======
+whitenoise
+>>>>>>> b2a046d (up)
