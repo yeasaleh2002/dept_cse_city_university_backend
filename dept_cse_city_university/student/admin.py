@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Semester, Batch, SSCInfo, HSCInfo, Student, Routine, Subject, Result, Announcement,Registration
+from .models import Semester, Batch, Student, Routine, Subject, Result, Announcement,Registration
 
 
 @admin.register(Registration)
@@ -21,29 +21,41 @@ class BatchAdmin(admin.ModelAdmin):
     list_display = ('name',)
     search_fields = ('name',)
 
-@admin.register(SSCInfo)
-class SSCInfoAdmin(admin.ModelAdmin):
-    list_display = ('roll', 'reg', 'passing_year', 'result', 'school', 'board', 'group')
-    search_fields = ('roll', 'school', 'board', 'group')
-    list_filter = ('passing_year', 'board', 'group')
 
-@admin.register(HSCInfo)
-class HSCInfoAdmin(admin.ModelAdmin):
-    list_display = ('roll', 'reg', 'passing_year', 'result', 'college', 'board', 'group')
-    search_fields = ('roll', 'college', 'board', 'group')
-    list_filter = ('passing_year', 'board', 'group')
-
-@admin.register(Student)
 class StudentAdmin(admin.ModelAdmin):
-    list_display = ('user', 'student_id', 'batch', 'is_approved', 'phone', 'gender')
-    search_fields = ('user__first_name', 'user__last_name', 'student_id')
-    list_filter = ('batch', 'is_approved', 'gender')
-    readonly_fields = ('student_id', 'password')  # Make these fields read-only in admin
+    list_display = ('user', 'student_id', 'batch', 'is_approved', 'gender', 'phone')
+    list_filter = ('is_approved', 'batch', 'gender')
+    search_fields = ('user__first_name', 'user__last_name', 'student_id', 'phone', 'ssc_roll', 'hsc_roll')
+    readonly_fields = ('student_id', 'password')  # Make certain fields read-only
+    fieldsets = (
+        ('Personal Information', {
+            'fields': ('user', 'photo', 'phone', 'date_of_birth', 'gender', 'address', 'father_name', 'mother_name')
+        }),
+        ('Batch and Status', {
+            'fields': ('batch', 'is_approved', 'student_id')
+        }),
+        ('SSC Information', {
+            'fields': ('ssc_roll', 'ssc_reg', 'ssc_passing_year', 'ssc_result', 'ssc_school', 'ssc_board', 'ssc_group')
+        }),
+        ('HSC Information', {
+            'fields': ('hsc_roll', 'hsc_reg', 'hsc_passing_year', 'hsc_result', 'hsc_college', 'hsc_board', 'hsc_group')
+        }),
+        ('System Information', {
+            'fields': ('password',)
+        }),
+    )
 
     def get_readonly_fields(self, request, obj=None):
-        if obj and obj.is_approved:
-            return self.readonly_fields + ('is_approved',)
+        """
+        Make `student_id` and `password` read-only after the student is created.
+        """
+        if obj:
+            return self.readonly_fields + ('student_id', 'password')
         return self.readonly_fields
+
+
+# Register the Student model with the custom admin class
+admin.site.register(Student, StudentAdmin)
 
 @admin.register(Routine)
 class RoutineAdmin(admin.ModelAdmin):

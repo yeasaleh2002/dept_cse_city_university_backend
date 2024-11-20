@@ -14,26 +14,78 @@ class BatchSerializer(serializers.ModelSerializer):
         fields = ['id', 'name']
 
 
-class SSCInfoSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = SSCInfo
-        fields = ['id', 'roll', 'reg', 'passing_year', 'result', 'school', 'board', 'group']
-
-
-class HSCInfoSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = HSCInfo
-        fields = ['id', 'roll', 'reg', 'passing_year', 'result', 'college', 'board', 'group']
-
 
 class StudentSerializer(serializers.ModelSerializer):
+    # Nested serializers for User-related data
+    first_name = serializers.CharField(source='user.first_name', read_only=True)
+    last_name = serializers.CharField(source='user.last_name', read_only=True)
+    email = serializers.EmailField(source='user.email', read_only=True)
+
     class Meta:
         model = Student
         fields = [
-            'id', 'user', 'phone', 'date_of_birth', 'address', 'batch', 'father_name', 'mother_name', 'gender', 
-            'photo', 'ssc', 'hsc', 'student_id', 'is_approved', 'password'
+            # User-related fields
+            'id', 'first_name', 'last_name', 'email',
+            
+            # Personal details
+            'phone', 'date_of_birth', 'address', 'gender', 'photo',
+            'father_name', 'mother_name',
+
+            # Batch and status
+            'batch', 'is_approved', 'student_id',
+
+            # SSC details
+            'ssc_roll', 'ssc_reg', 'ssc_passing_year', 'ssc_result',
+            'ssc_school', 'ssc_board', 'ssc_group',
+
+            # HSC details
+            'hsc_roll', 'hsc_reg', 'hsc_passing_year', 'hsc_result',
+            'hsc_college', 'hsc_board', 'hsc_group',
         ]
-        extra_kwargs = {'password': {'write_only': True}}
+        read_only_fields = ['student_id', 'is_approved']  # Mark fields as read-only if necessary
+
+
+class StudentCreateSerializer(serializers.ModelSerializer):
+    """
+    Serializer for creating a Student, including creating the associated User object.
+    """
+    first_name = serializers.CharField(source='user.first_name')
+    last_name = serializers.CharField(source='user.last_name')
+    email = serializers.EmailField(source='user.email')
+
+    class Meta:
+        model = Student
+        fields = [
+            # User-related fields
+            'first_name', 'last_name', 'email',
+            
+            # Personal details
+            'phone', 'date_of_birth', 'address', 'gender', 'photo',
+            'father_name', 'mother_name',
+
+            # Batch and SSC/HSC details
+            'batch', 'ssc_roll', 'ssc_reg', 'ssc_passing_year', 'ssc_result',
+            'ssc_school', 'ssc_board', 'ssc_group',
+            'hsc_roll', 'hsc_reg', 'hsc_passing_year', 'hsc_result',
+            'hsc_college', 'hsc_board', 'hsc_group',
+        ]
+
+    def create(self, validated_data):
+        # Extract user data
+        user_data = validated_data.pop('user')
+        user = User.objects.create(
+            username=user_data['email'],  # Assuming email is used as the username
+            email=user_data['email'],
+            first_name=user_data['first_name'],
+            last_name=user_data['last_name']
+        )
+        user.set_password('defaultpassword')  # Set a default password or use email for verification
+        user.save()
+
+        # Create the student object
+        student = Student.objects.create(user=user, **validated_data)
+        return student
+
 
 
 class RoutineSerializer(serializers.ModelSerializer):

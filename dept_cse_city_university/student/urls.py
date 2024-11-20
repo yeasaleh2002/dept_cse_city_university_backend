@@ -3,9 +3,7 @@ from rest_framework.routers import DefaultRouter
 
 from .views import (
     SemesterViewSet, 
-    BatchViewSet, 
-    SSCInfoViewSet, 
-    HSCInfoViewSet, 
+    BatchViewSet,  
     StudentViewSet, 
     RoutineViewSet, 
     SubjectViewSet, 
@@ -17,8 +15,6 @@ from .views import (
 router = DefaultRouter()
 router.register(r'semesters', SemesterViewSet)
 router.register(r'batches', BatchViewSet)
-router.register(r'sscinfo', SSCInfoViewSet)
-router.register(r'hscinfo', HSCInfoViewSet)
 router.register(r'students', StudentViewSet)
 router.register(r'routines', RoutineViewSet)
 router.register(r'subjects', SubjectViewSet)
