@@ -13,7 +13,7 @@ from django.contrib.auth import authenticate, login, logout
 from rest_framework.authtoken.models import Token
 from .serializers import LoginSerializer
 from .models import Semester, Batch, Student, Routine, Subject, Registration, Result, Announcement
-from .serializers import SemesterSerializer, BatchSerializer, StudentSerializer, RoutineSerializer, SubjectSerializer, RegistrationSerializer, ResultSerializer, AnnouncementSerializer
+from .serializers import SemesterSerializer, BatchSerializer, StudentSerializer, RoutineSerializer, SubjectSerializer, RegistrationSerializer, ResultSerializer, AnnouncementSerializer,StudentCreateSerializer
 from django.contrib.auth import get_user_model
 
 
@@ -59,11 +59,20 @@ class StudentViewSet(viewsets.ModelViewSet):
     """
     queryset = Student.objects.all()
     serializer_class = StudentSerializer
-    filterset_class = StudentFilter  
-    search_fields = ['student_id', 'name']  
-    ordering_fields = ['student_id', 'name']  
-    ordering = ['student_id']
 
+    def get_serializer_class(self):
+        """
+        Use a different serializer for creating objects.
+        """
+        if self.action == 'create':
+            return StudentCreateSerializer
+        return StudentSerializer
+
+    def perform_create(self, serializer):
+        """
+        Save a new student instance.
+        """
+        serializer.save()
 
     @action(detail=False, methods=['get'])
     def my_profile(self, request):

@@ -8,7 +8,7 @@ class FeedbackSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Feedback
-        fields = ['id','teacher', 'feedback_text', 'rating', 'created_at']
+        fields = ['id','teacher', 'feedback_text','created_at']
         read_only_fields = ['created_at']
     
     def create(self, validated_data):

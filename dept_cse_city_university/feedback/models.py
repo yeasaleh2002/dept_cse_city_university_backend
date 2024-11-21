@@ -7,7 +7,6 @@ from teacher.models import Teacher
 class Feedback(models.Model):
     teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE)  # Link to the Teacher model
     feedback_text = models.TextField()
-    rating = models.PositiveIntegerField(default=1, choices=[(i, str(i)) for i in range(1, 6)])  # Rating from 1 to 5
     created_at = models.DateTimeField(auto_now_add=True)
     
     def __str__(self):
